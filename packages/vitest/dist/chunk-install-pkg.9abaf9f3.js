@@ -4,7 +4,7 @@ import { g as getDefaultExportFromCjs } from './vendor-_commonjsHelpers.7d1333e8
 import require$$2 from 'util';
 import require$$0$1 from 'child_process';
 import { p as pathKeyExports, s as signalExitExports, m as mergeStream$1, g as getStreamExports, c as crossSpawnExports } from './vendor-index.1f85e5f1.js';
-import { o as onetimeExports } from './vendor-cli-api.f730581b.js';
+import { o as onetimeExports } from './vendor-cli-api.d7f36336.js';
 import require$$0 from 'os';
 import 'node:buffer';
 import 'node:path';

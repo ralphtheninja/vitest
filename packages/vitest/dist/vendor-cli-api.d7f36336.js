@@ -79,7 +79,7 @@ async function ensurePackageInstalled(dependency, root) {
     message: c.reset(`Do you want to install ${c.green(dependency)}?`)
   });
   if (install) {
-    await (await import('./chunk-install-pkg.ff898fd7.js')).installPackage(dependency, { dev: true });
+    await (await import('./chunk-install-pkg.9abaf9f3.js')).installPackage(dependency, { dev: true });
     process.stderr.write(c.yellow(`
 Package ${dependency} installed, re-run the command to start.
 `));
@@ -13867,6 +13867,7 @@ class Vitest {
     const files = await this.filterTestsBySource(
       await this.globTestFiles(filters)
     );
+    console.log("found files", files);
     if (!files.length) {
       const exitCode = this.config.passWithNoTests ? 0 : 1;
       await this.reportCoverage(true);
@@ -13880,6 +13881,7 @@ class Vitest {
       await this.report("onWatcherStart");
   }
   async getTestDependencies(filepath) {
+    console.log("getTestDependencies filepath", filepath);
     const deps = /* @__PURE__ */ new Set();
     const addImports = async ([project, filepath2]) => {
       const transformed = await project.vitenode.transformRequest(filepath2);
@@ -13887,11 +13889,17 @@ class Vitest {
         return;
       const dependencies = [...transformed.deps || [], ...transformed.dynamicDeps || []];
       for (const dep of dependencies) {
+        console.log("dep", dep);
         const path = await this.server.pluginContainer.resolveId(dep, filepath2, { ssr: true });
+        console.log("path", path);
         const fsPath = path && !path.external && path.id.split("?")[0];
+        console.log("fsPath", fsPath);
         if (fsPath && !fsPath.includes("node_modules") && !deps.has(fsPath) && existsSync(fsPath)) {
           deps.add(fsPath);
+          console.log("await addImports", project, fsPath);
           await addImports([project, fsPath]);
+        } else {
+          console.log("did not add", fsPath);
         }
       }
     };
@@ -13899,6 +13907,7 @@ class Vitest {
     return deps;
   }
   async filterTestsBySource(specs) {
+    console.log("in filterTestsBySource, specs=", specs);
     if (this.config.changed && !this.config.related) {
       const { VitestGit } = await import('./chunk-node-git.c410fed8.js');
       const vitestGit = new VitestGit(this.config.root);
@@ -13912,19 +13921,27 @@ class Vitest {
       this.config.related = Array.from(new Set(related2));
     }
     const related = this.config.related;
-    if (!related)
+    if (!related) {
+      console.log("returning specs, because !related");
       return specs;
+    }
     const forceRerunTriggers = this.config.forceRerunTriggers;
-    if (forceRerunTriggers.length && mm(related, forceRerunTriggers).length)
+    if (forceRerunTriggers.length && mm(related, forceRerunTriggers).length) {
+      console.log("returning specs, because forceRerunTriggers");
       return specs;
-    if (!related.length)
+    }
+    if (!related.length) {
+      console.log("returning []");
       return [];
+    }
     const testGraphs = await Promise.all(
       specs.map(async (spec) => {
+        console.log("specs.map(spec)", spec);
         const deps = await this.getTestDependencies(spec);
         return [spec, deps];
       })
     );
+    console.log("testGraphs", testGraphs);
     const runningTests = [];
     for (const [filepath, deps] of testGraphs) {
       if (related.some((path) => path === filepath[1] || deps.has(path)))
@@ -14220,10 +14237,14 @@ class Vitest {
     }));
   }
   async globTestFiles(filters = []) {
+    console.log("in globTestFiles, filters=", filters);
     const files = [];
     await Promise.all(this.projects.map(async (project) => {
+      console.log("this.projects.map(project)", project);
       const specs = await project.globTestFiles(filters);
+      console.log("await project.globTestFiles(filters)", specs);
       specs.forEach((file) => {
+        console.log("specs.forEach(file)", file);
         files.push([project, file]);
         const projects = this.projectsTestFiles.get(file) || /* @__PURE__ */ new Set();
         projects.add(project);

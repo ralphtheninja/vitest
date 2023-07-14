@@ -1,4 +1,4 @@
-export { B as BaseSequencer, V as VitestPlugin, c as createVitest, r as registerConsoleShortcuts, s as startVitest } from './vendor-cli-api.f730581b.js';
+export { B as BaseSequencer, V as VitestPlugin, c as createVitest, r as registerConsoleShortcuts, s as startVitest } from './vendor-cli-api.d7f36336.js';
 export { V as VitestExecutor } from './vendor-execute.aa0b364f.js';
 import 'pathe';
 import './vendor-constants.538d9b49.js';

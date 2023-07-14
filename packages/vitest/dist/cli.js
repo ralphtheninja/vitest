@@ -1,7 +1,7 @@
 import { normalize } from 'pathe';
 import cac from 'cac';
 import c from 'picocolors';
-import { v as version, s as startVitest, d as divider } from './vendor-cli-api.f730581b.js';
+import { v as version, s as startVitest, d as divider } from './vendor-cli-api.d7f36336.js';
 import './vendor-index.23ac4e13.js';
 import { t as toArray } from './vendor-index.ea279c29.js';
 import './vendor-constants.538d9b49.js';

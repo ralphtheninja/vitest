@@ -298,6 +298,8 @@ export class Vitest {
       await this.globTestFiles(filters),
     )
 
+      console.log('found files', files)
+
     if (!files.length) {
       const exitCode = this.config.passWithNoTests ? 0 : 1
 
@@ -318,7 +320,8 @@ export class Vitest {
       await this.report('onWatcherStart')
   }
 
-  private async getTestDependencies(filepath: WorkspaceSpec) {
+    private async getTestDependencies(filepath: WorkspaceSpec) {
+      console.log('getTestDependencies filepath', filepath)
     const deps = new Set<string>()
 
     const addImports = async ([project, filepath]: WorkspaceSpec) => {
@@ -326,13 +329,19 @@ export class Vitest {
       if (!transformed)
         return
       const dependencies = [...transformed.deps || [], ...transformed.dynamicDeps || []]
-      for (const dep of dependencies) {
+        for (const dep of dependencies) {
+            console.log('dep', dep)
         const path = await this.server.pluginContainer.resolveId(dep, filepath, { ssr: true })
+            console.log('path', path)
         const fsPath = path && !path.external && path.id.split('?')[0]
+            console.log('fsPath', fsPath)
         if (fsPath && !fsPath.includes('node_modules') && !deps.has(fsPath) && existsSync(fsPath)) {
           deps.add(fsPath)
+            console.log('await addImports', project, fsPath)
 
           await addImports([project, fsPath])
+        } else {
+            console.log('did not add', fsPath)
         }
       }
     }
@@ -342,7 +351,8 @@ export class Vitest {
     return deps
   }
 
-  async filterTestsBySource(specs: WorkspaceSpec[]) {
+    async filterTestsBySource(specs: WorkspaceSpec[]) {
+      console.log('in filterTestsBySource, specs=', specs)
     if (this.config.changed && !this.config.related) {
       const { VitestGit } = await import('./git')
       const vitestGit = new VitestGit(this.config.root)
@@ -357,23 +367,32 @@ export class Vitest {
     }
 
     const related = this.config.related
-    if (!related)
-      return specs
+      if (!related) {
+          console.log('returning specs, because !related')
+          return specs
+      }
 
     const forceRerunTriggers = this.config.forceRerunTriggers
-    if (forceRerunTriggers.length && mm(related, forceRerunTriggers).length)
-      return specs
+      if (forceRerunTriggers.length && mm(related, forceRerunTriggers).length) {
+          console.log('returning specs, because forceRerunTriggers')
+          return specs
+      }
 
     // don't run anything if no related sources are found
-    if (!related.length)
-      return []
+      if (!related.length) {
+          console.log('returning []')
+          return []
+      }
 
     const testGraphs = await Promise.all(
       specs.map(async (spec) => {
+          console.log('specs.map(spec)', spec)
         const deps = await this.getTestDependencies(spec)
         return [spec, deps] as const
       }),
     )
+
+      console.log('testGraphs', testGraphs)
 
     const runningTests = []
 
@@ -759,10 +778,14 @@ export class Vitest {
   }
 
   public async globTestFiles(filters: string[] = []) {
+      console.log('in globTestFiles, filters=', filters)
     const files: WorkspaceSpec[] = []
     await Promise.all(this.projects.map(async (project) => {
+        console.log('this.projects.map(project)', project)
       const specs = await project.globTestFiles(filters)
+        console.log('await project.globTestFiles(filters)', specs)
       specs.forEach((file) => {
+          console.log('specs.forEach(file)', file)
         files.push([project, file])
         const projects = this.projectsTestFiles.get(file) || new Set()
         projects.add(project)
